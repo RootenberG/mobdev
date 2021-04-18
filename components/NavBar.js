@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import StudyIcon from './StudyIcon';
@@ -9,11 +10,13 @@ function NavBar(props) {
             <TouchableOpacity onPress={()=>props.changePage(true)} style={styles.touchable}>
                 <View style={styles.centeredText}>
                     <StudyIcon/>
+                    <Text>General</Text>
                 </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>props.changePage(false)} style={styles.touchable}>
                 <View style={styles.centeredText}>
                     <TimeIcon/>
+                    <Text>Coords</Text>
                 </View>
             </TouchableOpacity>
         </View>

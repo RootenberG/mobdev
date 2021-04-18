@@ -4,7 +4,7 @@ import { StyleSheet, Image } from 'react-native';
 function TimeIcon() {
     return (
         <>
-            <Image style={styles.tIcon} source={require('../images/time.png')} />
+            <Image style={styles.tIcon} source={require('../images/compas.png')} />
         </>
     )
 }
