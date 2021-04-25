@@ -1,28 +1,76 @@
 import { StatusBar } from "expo-status-bar";
-import React, {useState} from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Dimensions } from "react-native";
 import NavBar from "./components/NavBar";
+import * as ScreenOrientation from "expo-screen-orientation";
 
-import CoordinateDS from './components/CoordinatesDS'
+
+import Drawing from "./components/Drawing/Drawing";
 
 export default function App() {
-  const [showFirstPage, setShowFirstPage] = useState(true);
-  const changePage = (show) => setShowFirstPage(show);
+  const [page, setPage] = useState("home");
+  const [orientation, setOrient] = useState("portrait");
+  const changePage = (pageName) => {
+    setPage(pageName);
+  };
+  let activePage;
 
-  return (
-    <>
-      {showFirstPage ? (
+  if (page === "home") {
+    activePage = (
+      <>
         <View style={styles.container}>
           <Text style={styles.textInfo}>
           Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
           </Text>
           <StatusBar style="auto" />
         </View>
-      ) : (
-        <CoordinateDS/>
-      )}
-      <View style={styles.navBar}>
-        <NavBar showFirstPage={showFirstPage} changePage={changePage} />
+      </>
+    );
+  } else if (page === "graph") {
+    activePage = (
+      <>
+        <View style={styles.container}>
+          <Drawing />
+          <StatusBar style="auto" />
+        </View>
+      </>
+    );
+  } else {
+    activePage = (
+      <>
+        <View style={styles.container}>
+          <Text style={styles.textInfo}>
+          Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
+          </Text>
+          <StatusBar style="auto" />
+        </View>
+      </>
+    );
+  }
+
+  useEffect(() => {
+    ScreenOrientation.unlockAsync();
+  });
+
+  Dimensions.addEventListener("change", () => {
+    const isPortrait = () => {
+      const dim = Dimensions.get("screen");
+      return dim.height >= dim.width;
+    };
+    setOrient(isPortrait() ? "portrait" : "landscape");
+  });
+
+  return (
+    <>
+      {activePage}
+      <View
+        style={
+          orientation === "portrait"
+            ? styles.navBarPortrait
+            : styles.navBarLandscape
+        }
+      >
+        <NavBar onPage={page} changePage={changePage} />
       </View>
     </>
   );
@@ -30,15 +78,20 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "skyblue",
     flex: 0.92,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
-  navBar: {
+  navBarPortrait: {
     width: "100%",
-    flex: 0.08,
+    height: "100%",
+    flex: 0.1,
+  },
+  navBarLandscape: {
+    width: "100%",
+    height: "100%",
+    flex: 0.2,
   },
   textInfo: {
     textAlign: "center",
