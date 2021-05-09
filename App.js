@@ -4,8 +4,9 @@ import { StyleSheet, Text, View, Dimensions } from "react-native";
 import NavBar from "./components/NavBar";
 import * as ScreenOrientation from "expo-screen-orientation";
 
-
 import Drawing from "./components/Drawing/Drawing";
+import Books from "./components/Books";
+
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -20,7 +21,7 @@ export default function App() {
       <>
         <View style={styles.container}>
           <Text style={styles.textInfo}>
-          Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
+            Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
           </Text>
           <StatusBar style="auto" />
         </View>
@@ -35,12 +36,21 @@ export default function App() {
         </View>
       </>
     );
+  } else if (page === "books") {
+    activePage = (
+      <>
+        <View style={styles.container}>
+          <Books />
+          <StatusBar style="auto" />
+        </View>
+      </>
+    );
   } else {
     activePage = (
       <>
         <View style={styles.container}>
           <Text style={styles.textInfo}>
-          Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
+            Савічев Денис{"\n"}Група ІВ-81{"\n"}ЗК ІВ-81 8123
           </Text>
           <StatusBar style="auto" />
         </View>
