@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { StudyIcon,  GraphIcon, BooksIcon } from "./Icons";
+import { StudyIcon,  GraphIcon, BooksIcon, PhotosIcon } from "./Icons";
 
 function NavBar(props) {
   return (
@@ -47,6 +47,20 @@ function NavBar(props) {
           <Text>Books</Text>
         </View>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => props.changePage("photos")}
+        style={styles.touchable}
+      >
+        <View
+          style={[
+            styles.centeredText,
+            props.onPage === "photos" && styles.active,
+          ]}
+        >
+          <PhotosIcon />
+          <Text style={styles.textFont}>Photos</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -58,6 +72,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
+  },
+  textFont: {
+    fontSize: 13,
   },
   centeredText: {
     height: "100%",

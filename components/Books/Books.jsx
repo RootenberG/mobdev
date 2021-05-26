@@ -4,6 +4,7 @@ import {
   ScrollView,
   View,
   Text,
+  TextInput,
   Image,
   TouchableHighlight,
   Button,
@@ -14,6 +15,7 @@ import booksMock from "./BooksList.json";
 import paths from "./postersPath";
 import Book from "./Book/Book";
 import AddBook from "./AddBook";
+import CachedImage from "../../helpers/CachedImage";
 
 class Books extends PureComponent {
   constructor(props) {
@@ -26,6 +28,7 @@ class Books extends PureComponent {
       bookId: "",
       posterPath: "",
       books: [],
+      value: "",
     };
     this.showDefaultPage = this.showDefaultPage.bind(this);
   }
@@ -88,15 +91,98 @@ class Books extends PureComponent {
     }
   }
 
+  async setLocalFile(req, resp) {
+    try {
+      let fileUri = FileSystem.cacheDirectory + "BooksList.txt";
+      console.log(fileUri);
+      let txt;
+      txt = false;
+      // fileUri
+      //   ? (txt = await FileSystem.readAsStringAsync(fileUri))
+      //   : (txt = false);
+      const newBooks = txt
+        ? { ...JSON.parse(txt), [req]: resp }
+        : { [req]: resp };
+      await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(newBooks), {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+    } catch (e) {
+      alert(e);
+    }
+  }
+
+  async getLocalFile(req) {
+    try {
+      let fileUri = FileSystem.cacheDirectory + "BooksList.txt";
+      let txt = await FileSystem.readAsStringAsync(fileUri);
+      txt = JSON.parse(txt);
+      let res;
+      req in txt
+        ? (res = { Error: false, response: txt[req] })
+        : (res = {
+            Error: true,
+            message: "Request not found, please connect to the internet",
+          });
+      return res;
+    } catch (e) {
+      alert(e);
+    }
+  }
+
+  async getBooksFetch(text) {
+    try {
+      const response = await fetch(
+        `https://api.itbook.store/1.0/search/${text}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const books = await response.json();
+      // alert(JSON.stringify(films));
+      if (books.error === "0") {
+        await this.setState({
+          books: books.books,
+        });
+        await this.setLocalFile(text, books.books);
+      } else {
+        alert("Server not working!");
+      }
+    } catch (e) {
+      const localBooks = await this.getLocalFile(text);
+      localBooks.Error
+        ? alert(localBooks.message)
+        : this.setState({
+          books: localBooks.response,
+          });
+    }
+  }
+  handleChangeText(text) {
+    this.setState({
+      value: text,
+    });
+    text.length > 3 && this.getBooksFetch(text);
+    text.length <= 3 && this.setState({ books: [] });
+  }
   componentDidMount() {
     (async () => {
       try {
-        let fileUri = FileSystem.documentDirectory + "BooksList.txt";
-        let txt = await FileSystem.readAsStringAsync(fileUri);
-        txt ? (txt = txt) : (txt = JSON.stringify({ books: [] }));
-        this.setState({
-          books: [...booksMock.books, ...JSON.parse(txt).books],
-        });
+        // let fileUri = FileSystem.documentDirectory + "MoviesList.txt";
+        // await FileSystem.writeAsStringAsync(
+        //   fileUri,
+        //   JSON.stringify({
+        //     Search: [],
+        //   }),
+        //   { encoding: FileSystem.EncodingType.UTF8 }
+        // );
+        // let txt = await FileSystem.readAsStringAsync(fileUri);
+        // txt ? txt = txt :(txt = JSON.stringify({ Search: [] }));
+        // this.setState({
+        //   films: [...filmsMock.Search, ...JSON.parse(txt).Search],
+        // });
       } catch (e) {
         alert(e);
       }
@@ -137,51 +223,69 @@ class Books extends PureComponent {
                 <Button
                   title="Add Book"
                   color="#841584"
-                  accessibilityLabel="Learn more about this purple button"
                   onPress={() => this.addBook()}
                 />
-                {this.state.books.map((book, index) => {
-                  const id = book.id ? book.id : false;
-                  const isbn13 =
-                    book.isbn13 && book.isbn13 != "noid"
-                      ? `b${book.isbn13}`
-                      : false;
-                  const imagePath = paths[index] ? paths[index].image : "";
-                  return (
-                    <TouchableHighlight
-                      onPress={() => this.showBook(isbn13, imagePath)}
-                      key={index}
-                    >
-                      <View style={styles.book}>
-                        {paths[index] ? (
-                          <Image
-                            style={styles.imageSize}
-                            source={paths[index].image}
-                          />
-                        ) : (
-                          <View style={styles.imageSize} />
-                        )}
-                        <View style={styles.infoBlock}>
-                          <Text style={styles.text}>{`${book.title}`}</Text>
-                          <Text
-                            style={styles.text}
-                          >{`Subtitle: ${book.subtitle}`}</Text>
-                          <Text
-                            style={styles.text}
-                          >{`Price: ${book.price}`}</Text>
+                <TextInput
+                  title="Add Book"
+                  color="#DB29DB"
+                  style={{
+                    borderColor: "gray",
+                    borderWidth: 1,
+                    marginTop: 10,
+                    padding: 5,
+                  }}
+                  onChangeText={(text) => this.handleChangeText(text)}
+                  value={this.state.value}
+                />
+                {this.state.books != undefined &&
+                this.state.books.length != 0 ? (
+                  this.state.books.map((book, index) => {
+                    const id = book.id ? book.id : false;
+                    const isbn13 =
+                      book.isbn13 && book.isbn13 != "noid"
+                        ? book.isbn13
+                        : "";
+                    return (
+                      <TouchableHighlight
+                        onPress={() => this.showBook(isbn13, book.path)}
+                        key={index}
+                      >
+                        <View style={styles.book}>
+                          {book.image ? (
+                            <CachedImage
+                              title={book.isbn13}
+                              style={styles.imageSize}
+                              source={book.image}
+                            />
+                          ) : (
+                            <View style={styles.imageSize} />
+                          )}
+                          <View style={styles.infoBlock}>
+                            <Text style={styles.text}>{`${book.title}`}</Text>
+                            <Text
+                              style={styles.text}
+                            >{`Subtitle: ${book.subtitle}`}</Text>
+                            <Text
+                              style={styles.text}
+                            >{`Price: ${book.price}`}</Text>
+                          </View>
+                          {id && (
+                            <Button
+                              title="Delete"
+                              color="#841584"
+                              accessibilityLabel="Learn more about this purple button"
+                              onPress={() => this.deleteBook(id)}
+                            />
+                          )}
                         </View>
-                        {id && (
-                          <Button
-                            title="Delete"
-                            color="#841584"
-                            accessibilityLabel="Learn more about this purple button"
-                            onPress={() => this.deleteBook(id)}
-                          />
-                        )}
-                      </View>
-                    </TouchableHighlight>
-                  );
-                })}
+                      </TouchableHighlight>
+                    );
+                  })
+                ) : (
+                  <View style={styles.notFound}>
+                    <Text style={styles.notFoundText}>No items found</Text>
+                  </View>
+                )}
               </>
             );
           }
@@ -220,6 +324,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
+  },
+  notFound: {
+    paddingTop: 100,
+  },
+  notFoundText: {
+    textAlign: "center",
+    color: "#DB29DB",
   },
   text: {
     flex: 1,

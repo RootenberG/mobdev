@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
 import { View, Button, Text, Image, StyleSheet } from "react-native";
-import * as booksInfo from "./booksInfo/books";
+import Spinner from "react-native-loading-spinner-overlay";
 
 class Book extends PureComponent {
   constructor(props) {
@@ -8,7 +8,32 @@ class Book extends PureComponent {
 
     this.state = {
       hasError: false,
+      book: {},
     };
+  }
+  componentDidMount() {
+    (async () => {
+      try {
+        setTimeout(async () => {
+          const response = await fetch(
+            `https://api.itbook.store/1.0/books/${this.props.id}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const book = await response.json();
+          this.setState({
+            book,
+          });
+        }, 2000);
+      } catch (e) {
+        alert(e);
+      }
+    })();
   }
 
   render() {
@@ -21,18 +46,28 @@ class Book extends PureComponent {
     }
     return (
       <View>
-        <Image style={styles.imageSize} source={this.props.poster} />
-        <Text>Title: {booksInfo[this.props.id].title}</Text>
-        <Text>Subtitle: {booksInfo[this.props.id].subtitle}</Text>
-        <Text>Rated: {booksInfo[this.props.id].rating}</Text>
-        <Text>Authors: {booksInfo[this.props.id].authors}</Text>
-        <Text>Publisher: {booksInfo[this.props.id].publisher}</Text>
-        <Text>isbn13: {booksInfo[this.props.id].isbn13}</Text>
-        <Text>Pages: {booksInfo[this.props.id].pages}</Text>
-        <Text>Year: {booksInfo[this.props.id].year}</Text>
-        <Text>Rating: {booksInfo[this.props.id].rating}</Text>
-        <Text>Desc: {booksInfo[this.props.id].desc}</Text>
-        <Text>Price: {booksInfo[this.props.id].price}</Text>
+         {this.state.book.year ? (
+          <>
+        <Image style={styles.imageSize} source={{ uri: this.state.book.image }} />
+        <Text>Title: {this.state.book.title}</Text>
+        <Text>Subtitle: {this.state.book.subtitle}</Text>
+        <Text>Rated: {this.state.book.rating}</Text>
+        <Text>Authors: {this.state.book.authors}</Text>
+        <Text>Publisher: {this.state.book.publisher}</Text>
+        <Text>isbn13: {this.state.book.isbn13}</Text>
+        <Text>Pages: {this.state.book.pages}</Text>
+        <Text>Year: {this.state.book.year}</Text>
+        <Text>Rating: {this.state.book.rating}</Text>
+        <Text>Desc: {this.state.book.desc}</Text>
+        <Text>Price: {this.state.book.price}</Text>
+        </>
+        ) : (
+          <Spinner
+            visible={this.state.book.year ? false : true}
+            textContent={"Loading..."}
+            textStyle={styles.spinnerTextStyle}
+          />
+        )}
       </View>
     );
   }

@@ -6,7 +6,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 
 import Drawing from "./components/Drawing/Drawing";
 import Books from "./components/Books";
-
+import Photos from "./components/Photos/";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -41,6 +41,15 @@ export default function App() {
       <>
         <View style={styles.container}>
           <Books />
+          <StatusBar style="auto" />
+        </View>
+      </>
+    );
+  } else if (page === "photos") {
+    activePage = (
+      <>
+        <View style={styles.container}>
+          <Photos />
           <StatusBar style="auto" />
         </View>
       </>
